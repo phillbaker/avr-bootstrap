@@ -9,6 +9,7 @@
 .Trashes
 
 #ignore for avr development, dfu-programmer
-.hex
-.elf
+*.hex
+*.elf
+*.o
 
