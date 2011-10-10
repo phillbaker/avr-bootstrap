@@ -8,9 +8,8 @@
 
 int main(void)
 {
-		DDRE |= 1<<6;
-		PORTE &= !(1<<6);
     /* insert your hardware initialization here */
+    /* program variables */
     for(;;){
         /* insert your main loop code here */
     }
