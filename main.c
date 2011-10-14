@@ -5,6 +5,8 @@
  */
 
 #include <avr/io.h>
+#include "m_general.h"
+#include "m_bus.h"
 
 int main(void)
 {
