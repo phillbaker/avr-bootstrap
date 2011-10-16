@@ -6,12 +6,14 @@
 
 #include <avr/io.h>
 #include "m_general.h"
+#include "m_usb.h"
 #include "m_bus.h"
 #include "m_rf.h"
 
 int main(void)
 {
     /* insert your hardware initialization here */
+    m_usb_init();
     /* program variables */
     for(;;){
         /* insert your main loop code here */
