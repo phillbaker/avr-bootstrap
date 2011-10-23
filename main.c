@@ -11,11 +11,11 @@
 #include "m_rf.h"
 
 int main(void) {
-    /* insert your hardware initialization here */
-    m_usb_init();
-    /* program variables */
-    while(1){
-        /* insert your main loop code here */
-    }
-    return 0;   /* never reached */
+  /* insert your hardware initialization here */
+  m_usb_init();
+  /* program variables */
+  while(1){
+    /* insert your main loop code here */
+  }
+  return 0;   /* never reached */
 }
