@@ -10,12 +10,11 @@
 #include "m_bus.h"
 #include "m_rf.h"
 
-int main(void)
-{
+int main(void) {
     /* insert your hardware initialization here */
     m_usb_init();
     /* program variables */
-    for(;;){
+    while(1){
         /* insert your main loop code here */
     }
     return 0;   /* never reached */
