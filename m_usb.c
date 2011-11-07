@@ -950,6 +950,7 @@ ISR(USB_COM_vect)
 
 
 // BELOW FROM PRINT.C
+//NOTE: If you send a \n, it appends a \r! \n => \r\n!
 
 void print_P(const char *s)
 {
@@ -985,12 +986,17 @@ void m_usb_tx_hex8(unsigned char i)
 	phex(i);
 }
 
-void m_usb_tx_int(int i)
+//TODO these next four methods should be refactored
+void m_usb_tx_int(int i)//8 bit number
 {
 	char string[6] = {0,0,0,0,0,0};
 	itoa(i,string,10);
 	for(i=0;i<6;i++){
-		m_usb_tx_char(string[i]);
+	  //don't transmit null characters (messes up Matlab at least)
+	  //(this array will hold ascii values, so 0s are null characters, _not_ the ascii value of roman numeral 0
+	  if(string[i] != 0) {
+	  	m_usb_tx_char(string[i]);
+  	}
 	}
 }
 
@@ -999,7 +1005,9 @@ void m_usb_tx_uint(unsigned int i)
 	char string[5] = {0,0,0,0,0};
 	utoa(i,string,10);
 	for(i=0;i<5;i++){
-		m_usb_tx_char(string[i]);
+	  if(string[i] != 0) {
+	  	m_usb_tx_char(string[i]);
+  	}
 	}
 }
 
@@ -1008,7 +1016,9 @@ void m_usb_tx_long(long i)
 	char string[11] = {0,0,0,0,0,0,0,0,0,0,0};
 	ltoa(i,string,10);
 	for(i=0;i<11;i++){
-		m_usb_tx_char(string[i]);
+	  if(string[i] != 0) {
+  		m_usb_tx_char(string[i]);
+		}
 	}
 }
 
@@ -1017,7 +1027,8 @@ void m_usb_tx_ulong(unsigned long i)
 	char string[10] = {0,0,0,0,0,0,0,0,0,0};
 	ultoa(i,string,10);
 	for(i=0;i<10;i++){
-		m_usb_tx_char(string[i]);
+	  if(string[i] != 0) {
+  		m_usb_tx_char(string[i]);
+		}
 	}
 }
-
