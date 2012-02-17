@@ -2,6 +2,8 @@
  * Author: <insert your name here>
  * Copyright: <insert your copyright message here>
  * License: <insert your license reference here>
+ * 
+ * Code base from http://www.instructables.com/id/AVRArduino-RFID-Reader-with-UART-Code-in-C/?ALLSTEPS
  */
 
 #include <avr/io.h>
@@ -15,10 +17,10 @@ static void RFID_ena(uint8_t ena);
 static uint8_t ValidTag(void);
 static void TunedDelay(uint16_t);
 
-#define RFID_IN		PIND2
-#define RFID_ENA	PIND3
+#define RFID_IN		7 //D7
+#define RFID_OUT	6 //D6
 
-// Values taken from SoftSerial from Mikal Hart
+// Values taken from SoftSerial from Mikal Hart; 16MHz clock speed
 #define CENTER_DELAY			471
 #define INTRABIT_DELAY			950
 
@@ -27,10 +29,12 @@ static volatile uint8_t bDataReady;
 static volatile uint8_t rxIdx;
 
 int main(void) {
+  PLLCSR = 0x12; // 0001 0010 For a 16MHz clock
   USART_init(BAUD_9600);	
-	_delay_ms(2000);	// Long enough for me to connect my terminal program
-
-	USART_tx_S("USART Initialized!\n");
+	m_wait(2000);	// pause 2s //?
+  sei();
+  
+	//USART_tx_S("USART Initialized!\n");
 
 	// Setup RFID pins on port 
 	RFID_init();
@@ -38,10 +42,8 @@ int main(void) {
 	TunedDelay(947);	// center on serial pulse
 
 	char ibuff[2];
-	for (;;)
-	{
-		if (bDataReady)
-		{
+	for (;;) {
+		if (bDataReady) {
 #ifdef __DEBUG__
 			USART_tx_S("Start byte: ");
 			USART_tx_S(itoa(RFID_tag[0],&ibuff[0],16));
@@ -49,33 +51,32 @@ int main(void) {
 			USART_tx_S("\nStop  byte: ");
 			USART_tx_S(itoa(RFID_tag[11],&ibuff[0],16));
 #endif
-			if ( ValidTag() )
-			{
-				USART_tx_S("\nRFID Tag: ");
-				for(uint8_t x = 1; x < 11; x++)
-				{
-					USART_tx_S(itoa(RFID_tag[x],ibuff,16));
-					if (x != 10)
-						USART_tx(':');
-				}
-				USART_tx_S("\n");
+			if ( ValidTag() ) {
+				// USART_tx_S("\nRFID Tag: ");
+				//        for(uint8_t x = 1; x < 11; x++) {
+				//          USART_tx_S(itoa(RFID_tag[x],ibuff,16));
+				//          if (x != 10)
+				//            USART_tx(':');
+				//        }
+				//        USART_tx_S("\n");
 			}
 			rxIdx = 0;
 			bDataReady = 0;
 		}
-	}
+	}//end main for
 }
 
 void RFID_init() {
 	bDataReady = 0;
 	rxIdx = 0;
-	// RFID_IN input from RFID Reader SOUT, RFID_ENA output to RFID Reader /ENA
-	BSET(DDRD, RFID_ENA);
-	BSET(PORTD,RFID_IN);	// pullup
+	
+	// RFID_IN input from RFID Reader SOUT
+  clear(DDRB, RFID_IN);//pin input
 
-	BSET(PCICR,PCIE2);	// pin change interrupt control register pcie2
-	BSET(PCMSK2,PCINT18); // enable pin change interrupt for PCINT18 (PD2)
-	BSET(SREG,7);		// Set SREG I-bit
+	//BSET(PCICR,PCIE2);	// pin change interrupt control register pcie2
+	//BSET(PCMSK2,PCINT18); // enable pin change interrupt for PCINT18 (PD2)
+	//BSET(SREG,7);		// Set SREG I-bit
+	
 }
 
 // this is the interrupt handler
@@ -84,8 +85,7 @@ ISR(PCINT2_vect) {
 		return;
 	uint8_t	bit = 0;
 	TunedDelay(CENTER_DELAY);		// Center on start bit
-	for (uint8_t x = 0; x < 8; x++)
-	{
+	for (uint8_t x = 0; x < 8; x++) {
 		TunedDelay(INTRABIT_DELAY);	// skip a bit, brother...
 		if (BCHK(PIND,RFID_IN))
 			BSET(bit,x);

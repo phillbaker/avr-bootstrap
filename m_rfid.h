@@ -17,10 +17,6 @@
 char * baseconv(unsigned int num, int base);
 
 // from AVR035: Efficient C Coding for AVR 
-#define BSET(ADDRESS,BIT) (ADDRESS |= (1<<BIT)) 
-#define BCLR(ADDRESS,BIT) (ADDRESS &= ~(1<<BIT)) 
-#define BTOG(ADDRESS,BIT) (ADDRESS ^= (1<<BIT)) 
-#define BCHK(ADDRESS,BIT) (ADDRESS &  (1<<BIT)) 
 
 #define BMSET(x,y) (x |= (y)) 
 #define BMCLR(x,y) (x &= (~y)) 
@@ -49,3 +45,5 @@ void	USART_tx(unsigned char);
 void 	USART_tx_S(const char *);
 
 void 	USART_tx_P(const char *);
+
+#endif
