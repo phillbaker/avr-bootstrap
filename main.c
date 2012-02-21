@@ -40,20 +40,21 @@ int main(void) {
   
   unsigned char c;
   while(true) {
-    // int tag_bytes_read = 0;
+    m_red(OFF);
+    int tag_bytes_read = 0;
     c = usart_receive();
-    // //wait for start byte
-    // if(c != START_BYTE) {
-    //   continue;
-    // }
-    // m_red(ON);
-    // while(tag_bytes_read < TAG_LENGTH + 1) {
-    //   c = usart_receive();
-    //   if(c == STOP_BYTE)
-    //     break;
-    //   tag[tag_bytes_read] = c;
-    //   tag_bytes_read++;
-    // }
+    //wait for start byte
+    if(c != START_BYTE) {
+      continue;
+    }
+    m_red(ON);
+    while(tag_bytes_read < TAG_LENGTH + 1) {
+      c = usart_receive();
+      if(c == STOP_BYTE)
+        break;
+      tag[tag_bytes_read] = c;
+      tag_bytes_read++;
+    }
     
     if(m_usb_isconnected()) {
       //each card consists of 13 bits: start bit, 10 data bits, checksum, end flag; the 10 data bits are pairs of hex numbers
@@ -68,17 +69,21 @@ int main(void) {
       
       //char str[1];
       //sprintf(str, "%c", c);
-      m_usb_tx_int((int)c);
-      // int i;
-      // for(i = 0; i < TAG_LENGTH; i++) {
-      //   m_usb_tx_int((int)tag[i]);
-      //   m_usb_tx_string(" ");
-      // }
       //m_usb_tx_string(&str);
+      //m_usb_tx_int((int)c);
+      int i;
+      //least significant bit at lowest value
+      for(i = 0; i < TAG_LENGTH; i++) {
+        // m_usb_tx_int(i);
+        // m_usb_tx_string(": ");
+        // m_usb_tx_int((int)tag[i]);
+        m_usb_tx_char(tag[i]);
+        m_usb_tx_string(" ");
+      }
     
       m_usb_tx_string("\n");
     }
-    // tag_bytes_read = 0;
+    tag_bytes_read = 0;
   }
 }
 
