@@ -14,8 +14,8 @@
 #include "m_usb.h"
 
 #define TAG_LENGTH 10      //Max length of RFID tag
-#define START_BYTE 0x29 
-#define STOP_BYTE 0x39
+#define START_BYTE 0x2 
+#define STOP_BYTE 0x3
 #define BAUD 9600
 #define UBRR_VAL ((F_CPU / (16UL * BAUD)) - 1) //use F_CPU defined at command line of compile flags
 
