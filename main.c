@@ -3,22 +3,25 @@
  * Copyright: <insert your copyright message here>
  * License: <insert your license reference here>
  * 
- * Code base from http://www.instructables.com/id/AVRArduino-RFID-Reader-with-UART-Code-in-C/?ALLSTEPS
+ * 
  */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "m_general.h"
+#include "m_usb.h"
 
 void usart_init(unsigned int baud);
 unsigned char usart_receive(void);
 
 int main(void) {
   m_clockdivide(0); // 16 MHz
+  m_usb_init();
   usart_init(9600);
   //D2 	RXD1 	USART receive
-  clear(DDRD, 2);//pin 4 input
+  clear(DDRD, 2);
   //D3 	USART transmit
   //D5 	USART external clock in/out
   
@@ -27,7 +30,34 @@ int main(void) {
   
   unsigned char c;
   while(true) {
-    c = usart_receive();
+    int i = 0;
+    char buff[3];
+    while(i < 2) {
+      c = usart_receive();
+      buff[i] = c;
+      i++;
+    }
+    if(m_usb_isconnected()) {
+      //each card consists of 13 bits: start bit, 10 data bits, checksum, end flag; the 10 data bits are pairs of hex numbers
+      //take 13 bits out of 24
+      int data[13];
+      data[0] = buff[0] >> 2;
+      
+      m_usb_tx_int(data[0]);
+      m_usb_tx_string(" ");
+      
+      m_usb_tx_char(buff[0]);
+      m_usb_tx_char(buff[1]);
+      m_usb_tx_char(buff[2]);
+      
+      //char str[1];
+      //sprintf(str, "%c", c);
+      //m_usb_tx_int((int)c);
+      //m_usb_tx_string(&str);
+    
+      m_usb_tx_string("\n");
+    }
+    i = 0;
   }
 }
 
