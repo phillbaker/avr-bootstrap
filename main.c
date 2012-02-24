@@ -60,23 +60,9 @@ int main(void) {
       //each card consists of 13 bits: start bit, 10 data bits, checksum, end flag; the 10 data bits are pairs of hex numbers
       //take 13 bits out of 24
       
-      // m_usb_tx_int(data[0]);
-      // m_usb_tx_string(" ");
-      // 
-      // m_usb_tx_char(buff[0]);
-      // m_usb_tx_char(buff[1]);
-      // m_usb_tx_char(buff[2]);
-      
-      //char str[1];
-      //sprintf(str, "%c", c);
-      //m_usb_tx_string(&str);
-      //m_usb_tx_int((int)c);
       int i;
       //least significant bit at lowest value
       for(i = 0; i < TAG_LENGTH; i++) {
-        // m_usb_tx_int(i);
-        // m_usb_tx_string(": ");
-        // m_usb_tx_int((int)tag[i]);
         m_usb_tx_char(tag[i]);
         m_usb_tx_string(" ");
       }
@@ -96,7 +82,6 @@ void usart_rx_init(void) {
   /* Enable receiver and transmitter */
   UCSR1B = (1<<RXEN1)|(1<<TXEN1);
   /* Set frame format: 8 data, 1stop bit (stop bits ignored in reading) */
-  //UCSR1C = (0<<USBS1)|(3<<UCSZ10);
   // Use 8-bit characters
   UCSR1C |= (1<<UCSZ10) | (1<<UCSZ11);
 }
