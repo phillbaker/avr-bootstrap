@@ -3,27 +3,16 @@
  * Copyright: <insert your copyright message here>
  * License: <insert your license reference here>
  * 
- * http://www.seeedstudio.com/depot/125khz-rfid-module-uart-p-171.html
- * http://www.gumbolabs.org/2009/10/17/parallax-rfid-reader-arduino/ <- this code was helpful
  */
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "m_general.h"
 #include "m_usb.h"
+#include "m_rfid.h"
 
 #define TAG_LENGTH 10      //Max length of RFID tag
-#define START_BYTE 0x2 
-#define STOP_BYTE 0x3
-#define BAUD 9600
-#define UBRR_VAL ((F_CPU / (16UL * BAUD)) - 1) //use F_CPU defined at command line of compile flags
-
 #define ITERATION_LENGTH 2000 //time, in ms, given to the user to move hand away
-
-void usart_rx_init(void);
-unsigned char usart_receive(void);
 
 char tag[TAG_LENGTH + 1];//do length + checksum bit
 
@@ -43,14 +32,14 @@ int main(void) {
   while(true) {
     m_red(OFF);
     int tag_bytes_read = 0;
-    c = usart_receive();
+    c = usart_breceive();
     //wait for start byte
     if(c != START_BYTE) {
       continue;
     }
     m_red(ON);
     while(tag_bytes_read < TAG_LENGTH + 1) {
-      c = usart_receive();
+      c = usart_breceive();
       if(c == STOP_BYTE)
         break;
       tag[tag_bytes_read] = c;
@@ -72,28 +61,4 @@ int main(void) {
     }
     tag_bytes_read = 0;
   }
-}
-
-void usart_rx_init(void) {
-  //9600bps, No parity ,8 databits, 1 stopbit (assumed no flow control)
-  
-  /* Set baud rate */ 
-  UBRR1H = (unsigned char)(UBRR_VAL>>8);
-  UBRR1L = (unsigned char)UBRR_VAL;
-  /* Enable receiver and transmitter */
-  UCSR1B = (1<<RXEN1)|(1<<TXEN1);
-  /* Set frame format: 8 data, 1stop bit (stop bits ignored in reading) */
-  // Use 8-bit characters
-  UCSR1C |= (1<<UCSZ10) | (1<<UCSZ11);
-}
-
-/**
-* Blocking function that returns char value in buffer.
-*/
-unsigned char usart_receive(void) {
-  //Wait for data to be received
-  while (!(UCSR1A & (1<<RXC1)))
-    ; //loop and wait
-  //Get and return received data from buffer
-  return UDR1;
 }

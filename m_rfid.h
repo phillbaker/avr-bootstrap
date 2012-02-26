@@ -1,49 +1,27 @@
-#ifndef m_rfid__
-#define m_rfid__
+/* Name: m_rfid.h
+ * Author: Phill Baker
+ * Copyright: All rights reserved, 2012.
+ * License: MIT License
+ * 
+ * http://www.seeedstudio.com/depot/125khz-rfid-module-uart-p-171.html
+ * http://www.gumbolabs.org/2009/10/17/parallax-rfid-reader-arduino/ <- this code was helpful
+ * 
+ * TODO: interupt driven code, non-blocking check for bytes available in the queue
+ */
 
-#include "m_general.h"
-#include <stdlib.h>
+#define START_BYTE 0x2 
+#define STOP_BYTE 0x3
+#define BAUD 9600
+#define UBRR_VAL ((F_CPU / (16UL * BAUD)) - 1) //use F_CPU defined at command line of compile flags
 
-#ifndef F_CPU
-#define F_CPU 16000000UL
-#endif
-
-#include <avr/io.h>
-#include <util/delay.h>
-
-// This just makes my life easier
-#define BIT16(b) ((unsigned long)0x00000001 << (b))
-#define	BIT8(b) (0x01 << (b))
-char * baseconv(unsigned int num, int base);
-
-// from AVR035: Efficient C Coding for AVR 
-
-#define BMSET(x,y) (x |= (y)) 
-#define BMCLR(x,y) (x &= (~y)) 
-#define BMTOG(x,y) (x ^= (y)) 
-#define BMCHK(x,y) (x & (y)) 
-
-#define BMPRINT(x) printf("[%8s]\n",baseconv(x,2));
-
-#pragma once//TODO what?
-
-//#define UART_BAUD 9600
-#define BAUD_9600	1
-#define BAUD_2400	2
-#define BAUD_38400	3
-
-//Perform UART startup initialization.
-void	USART_init(uint8_t b);
-
-// Send one character to the UART.
-unsigned char	USART_rx(void);
-
-// Receive one character from the UART.  The actual reception is
-// line-buffered, and one character is returned from the buffer at
-// each invokation.
-void	USART_tx(unsigned char);
-void 	USART_tx_S(const char *);
-
-void 	USART_tx_P(const char *);
-
-#endif
+///////////////////////////////////////////////////////////////////////////////
+////Public functions
+///////////////////////////////////////////////////////////////////////////////
+/**
+* Init the USART connection: 9600bps, No parity ,8 databits, 1 stopbit (assumed no flow control)
+**/
+void usart_rx_init(void);
+/**
+* Blocking function that returns char value in buffer. (Ie blocking receive)
+**/
+unsigned char usart_breceive(void);
