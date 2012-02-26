@@ -3,7 +3,8 @@
  * Copyright: <insert your copyright message here>
  * License: <insert your license reference here>
  * 
- * 
+ * http://www.seeedstudio.com/depot/125khz-rfid-module-uart-p-171.html
+ * http://www.gumbolabs.org/2009/10/17/parallax-rfid-reader-arduino/ <- this code was helpful
  */
 
 #include <avr/io.h>
@@ -64,7 +65,7 @@ int main(void) {
       //least significant bit at lowest value
       for(i = 0; i < TAG_LENGTH; i++) {
         m_usb_tx_char(tag[i]);
-        m_usb_tx_string(" ");
+        //m_usb_tx_string(" ");
       }
     
       m_usb_tx_string("\n");
