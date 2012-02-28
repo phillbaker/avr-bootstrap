@@ -3,6 +3,16 @@
 #include "m_rfid.h"
 
 void usart_rx_init(void) {
+  m_clockdivide(0); // 16 MHz
+  
+  //D2 	RXD1 	USART receive, enable digital in
+  clear(DDRD, 2);
+  //D3 	USART transmit
+  //D5 	USART external clock in/out
+  
+  //Receive Enable (RXENn) bit in the UCSRnB Register to one
+  set(UCSR1A, RXEN1);
+  
   //Set baud rate
   UBRR1H = (unsigned char)(UBRR_VAL>>8);
   UBRR1L = (unsigned char)UBRR_VAL;
@@ -13,10 +23,49 @@ void usart_rx_init(void) {
   UCSR1C |= (1<<UCSZ10) | (1<<UCSZ11);
 }
 
-unsigned char usart_breceive(void) {
+unsigned char m_rfid_bread_byte(void) {
   //Wait for data to be received
   while (!(UCSR1A & (1<<RXC1)))
     ; //loop and wait
   //Get and return received data from buffer
   return UDR1;
+}
+
+int m_rfid_bread_tag(char* buffer) {
+  //loop until a tag is found
+  while(true) {
+    int ret = m_rfid_read_tag(buffer);
+    if(ret < 0) {
+      continue;
+    }
+    //else return the value on success
+    return ret;
+  }
+}
+
+//read tag if this is a start byte or -1 for not the beginning
+int m_rfid_read_tag(char* buffer) {
+  unsigned char c = m_rfid_bread_byte();
+  //wait for start byte
+  if(c != START_BYTE) {
+    return -1;
+  }
+  //if we get start byte, read the tag
+  m_rfid_read_tag(buffer);
+  return 1;
+}
+
+//must be on first byte of the tag
+int m_rfid_get_tag_bytes(char* buffer) {
+  unsigned char c;
+  int tag_bytes_read = 0;
+  //read tag_length + 1 to get checksum byte and stop byte
+  while(tag_bytes_read < TAG_LENGTH + 1) {
+    c = m_rfid_bread_byte();
+    if(c == STOP_BYTE) //TODO if we get past TAG_LENGTH and there's no STOP_BYTE return -1; also do noise check via checksum byte
+      break;
+    buffer[tag_bytes_read] = c;
+    tag_bytes_read++;
+  }
+  return 1;
 }
