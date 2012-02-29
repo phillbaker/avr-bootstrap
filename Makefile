@@ -9,7 +9,7 @@
 # add their .o targets to the OBJECTS line below
 # (e.g. "OBJECTS = main.o myfile.o")
 # --------------------------------------------------------
-OBJECTS    = main.o m_rfid.o
+OBJECTS    = main.o m_rfid.o m_usb.o
 
 # --------------------------------------------------------
 # if you need to use one of our pre-compiled libraries,
