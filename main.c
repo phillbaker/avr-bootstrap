@@ -16,6 +16,10 @@ int main(void) {
   usart_rx_init();
   m_usb_init();
   
+  //use C6 as ground for external LED (active low)
+  //set(DDRC,6);
+  //set(PORTC,6);
+  
   char tag[TAG_LENGTH + 1];//do length + checksum bit
   int count = 0;
   while(true) {
@@ -23,13 +27,17 @@ int main(void) {
     m_wait(200);
     m_green(OFF);
     count += 1;
-    if(m_usb_isconnected()) {
-      m_usb_tx_int((int)count);
-      m_usb_tx_string("\n");
-    }
+    // if(m_usb_isconnected()) {
+    //   m_usb_tx_int((int)count);
+    //   m_usb_tx_string("\n");
+    // }
     if(count > 10) { //choose a relatively high, arbitrary number so we can miss a few every once in a while
       m_red(OFF);
+      //set(PORTC,6);
     }
+    // else if(count > 1000) {//prevent overflow
+    //   count = 11;
+    // }
     
     int res = m_rfid_read_tag(tag);
     if(res < 0) {
@@ -55,5 +63,6 @@ int main(void) {
     count = 0;
     m_red(ON);
     m_green(ON);
+    //clear(PORTC,6);
   }
 }
