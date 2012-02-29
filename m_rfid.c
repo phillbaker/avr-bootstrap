@@ -23,15 +23,25 @@ void usart_rx_init(void) {
   UCSR1C |= (1<<UCSZ10) | (1<<UCSZ11);
 }
 
-unsigned char m_rfid_bread_byte(void) {
+int m_rfid_bread_byte(unsigned char* c) {
   //Wait for data to be received
-  while (!(UCSR1A & (1<<RXC1)))
+  int res = m_rfid_read_byte(c);
+  while (res < 0)
     ; //loop and wait
   //Get and return received data from buffer
-  return UDR1;
+  return 1;
 }
 
-int m_rfid_bread_tag(char* buffer) {
+int m_rfid_read_byte(unsigned char* c) {
+  //Wait for data to be received
+  if (!(UCSR1A & (1<<RXC1)))
+    return -1; //loop and wait
+  //Get and use received data from buffer
+  *c = UDR1;
+  return 1;
+}
+
+int m_rfid_bread_tag(char buffer[]) {
   //loop until a tag is found
   while(true) {
     int ret = m_rfid_read_tag(buffer);
@@ -44,24 +54,24 @@ int m_rfid_bread_tag(char* buffer) {
 }
 
 //read tag if this is a start byte or -1 for not the beginning
-int m_rfid_read_tag(char* buffer) {
-  unsigned char c = m_rfid_bread_byte();
+int m_rfid_read_tag(char buffer[]) {
+  unsigned char c;
+  int res = m_rfid_read_byte(&c);
   //wait for start byte
   if(c != START_BYTE) {
     return -1;
   }
   //if we get start byte, read the tag
-  m_rfid_read_tag(buffer);
-  return 1;
+  return m_rfid_get_tag_bytes(buffer);
 }
 
 //must be on first byte of the tag
-int m_rfid_get_tag_bytes(char* buffer) {
+int m_rfid_get_tag_bytes(char buffer[]) {
   unsigned char c;
   int tag_bytes_read = 0;
   //read tag_length + 1 to get checksum byte and stop byte
   while(tag_bytes_read < TAG_LENGTH + 1) {
-    c = m_rfid_bread_byte();
+    int res = m_rfid_bread_byte(&c);
     if(c == STOP_BYTE) //TODO if we get past TAG_LENGTH and there's no STOP_BYTE return -1; also do noise check via checksum byte
       break;
     buffer[tag_bytes_read] = c;

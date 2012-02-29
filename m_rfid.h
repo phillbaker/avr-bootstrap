@@ -32,7 +32,7 @@ void usart_rx_init(void);
 * @param char* buffer - Should be length + checksum bit. E.g. char tag[TAG_LENGTH + 1].
 * @return int success
 **/
-int m_rfid_bread_tag(char* buffer);
+int m_rfid_bread_tag(char buffer[]);
 
 /**
 * Function that that writes to the char* the value of a RFID tag.
@@ -40,7 +40,7 @@ int m_rfid_bread_tag(char* buffer);
 * @param char* buffer - Should be length + checksum bit. E.g. char tag[TAG_LENGTH + 1].
 * @return int success
 **/
-int m_rfid_read_tag(char* buffer);
+int m_rfid_read_tag(char buffer[]);
 
 ///////////////////////////////////////////////////////////////////////////////
 ////Internal functions
@@ -49,10 +49,12 @@ int m_rfid_read_tag(char* buffer);
 /**
 * Blocking function that returns char value in buffer. (Ie blocking receive)
 **/
-unsigned char m_rfid_bread_byte(void);
+int m_rfid_bread_byte(unsigned char* c);
+
+int m_rfid_read_byte(unsigned char* c);
 
 /**
 * Read the bytes of the tag, the checksum and the stop byte.
 */
-int m_rfid_get_tag_bytes(char* buffer);
+int m_rfid_get_tag_bytes(char buffer[]);
 
