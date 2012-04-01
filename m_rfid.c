@@ -1,17 +1,12 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdio.h>
+#include <string.h>
 #include "m_rfid.h"
+#include "m_general.h"
 
 void usart_rx_init(void) {
-  m_clockdivide(0); // 16 MHz
-  
-  //D2 	RXD1 	USART receive, enable digital in
-  clear(DDRD, 2);
-  //D3 	USART transmit
-  //D5 	USART external clock in/out
-  
-  //Receive Enable (RXENn) bit in the UCSRnB Register to one
-  set(UCSR1A, RXEN1);
+  //9600bps, No parity ,8 databits, 1 stopbit (assumed no flow control)
   
   //Set baud rate
   UBRR1H = (unsigned char)(UBRR_VAL>>8);
@@ -23,49 +18,55 @@ void usart_rx_init(void) {
   UCSR1C |= (1<<UCSZ10) | (1<<UCSZ11);
 }
 
-unsigned char m_rfid_bread_byte(void) {
+unsigned char usart_breceive(void) {
   //Wait for data to be received
-  while (!(UCSR1A & (1<<RXC1)))
+  while (!usart_has_byte())
     ; //loop and wait
   //Get and return received data from buffer
   return UDR1;
 }
 
-int m_rfid_bread_tag(char* buffer) {
-  //loop until a tag is found
-  while(true) {
-    int ret = m_rfid_read_tag(buffer);
-    if(ret < 0) {
-      continue;
-    }
-    //else return the value on success
-    return ret;
+int usart_has_byte(void) {
+  if(UCSR1A & (1 << RXC1)) {
+    return 1;
   }
+  return 0;
 }
 
-//read tag if this is a start byte or -1 for not the beginning
-int m_rfid_read_tag(char* buffer) {
-  unsigned char c = m_rfid_bread_byte();
-  //wait for start byte
-  if(c != START_BYTE) {
-    return -1;
+int usart_receive_byte(unsigned char* c) {
+  if(usart_has_byte()) {
+    *c = UDR1;
+    return 1;
   }
-  //if we get start byte, read the tag
-  m_rfid_read_tag(buffer);
-  return 1;
+  return 0;
 }
 
-//must be on first byte of the tag
-int m_rfid_get_tag_bytes(char* buffer) {
+int usart_start_byte(void) {
+  //check for start byte
   unsigned char c;
-  int tag_bytes_read = 0;
-  //read tag_length + 1 to get checksum byte and stop byte
-  while(tag_bytes_read < TAG_LENGTH + 1) {
-    c = m_rfid_bread_byte();
-    if(c == STOP_BYTE) //TODO if we get past TAG_LENGTH and there's no STOP_BYTE return -1; also do noise check via checksum byte
-      break;
-    buffer[tag_bytes_read] = c;
-    tag_bytes_read++;
+  int ret = usart_receive_byte(&c);
+  if(ret && c == START_BYTE) {
+    return 1;
   }
-  return 1;
+  return 0;
+}
+
+int usart_checksum(unsigned char tag[]) {
+  //TODO doesn't like this, returns negative lengths...
+  // int len = strlen(tag);
+  // if((int)len != 12) {//reject if we don't have the right number
+  //   return len;
+  // }
+  //"0300BFB417" => "1F" checksum, 0x03 ^ 0x00 ^ 0xBF ^ 0xB4 ^ 0x17
+  
+  //take pairs of the string, convert them to hex numbers, XOR the 5 pairs
+  int b1;
+  int b2;
+  int b3;
+  int b4;
+  int b5;
+  int cb;
+  sscanf(tag, "%2x%2x%2x%2x%2x%2x", &b1, &b2, &b3, &b4, &b5, &cb);
+  int checksum = b1 ^ b2 ^ b3 ^ b4 ^ b5;
+  return checksum == cb;
 }
