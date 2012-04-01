@@ -30,9 +30,14 @@ int main(void) {
     unsigned char c;
     unsigned char tag[TAG_LENGTH + 2];//do length + checksum bytes
     while(tag_bytes_read < TAG_LENGTH + 2) {
-      c = usart_breceive();
+      /*c = usart_breceive();
       tag[tag_bytes_read] = c;
-      tag_bytes_read++;
+      tag_bytes_read++;*/
+      int ret = usart_receive_byte(&c);
+      if(ret) {
+        tag[tag_bytes_read] = c;
+        tag_bytes_read++;
+      }
     }
     
     if(usart_checksum(tag)) {
