@@ -6,8 +6,10 @@
 #include "m_general.h"
 
 void usart_rx_init(void) {
-  //9600bps, No parity ,8 databits, 1 stopbit (assumed no flow control)
+  //Receive Enable (RXENn) bit in the UCSRnB Register to one
+  set(UCSR1A, RXEN1);
   
+  //9600bps, No parity ,8 databits, 1 stopbit (assumed no flow control)
   //Set baud rate
   UBRR1H = (unsigned char)(UBRR_VAL>>8);
   UBRR1L = (unsigned char)UBRR_VAL;
